@@ -65,7 +65,7 @@ def proc():
             if record['file_name'] == 'pom.xml':
                 command = 'mvn compile'
             else:
-                command = 'gradle wrapper'
+                command = 'gradle build'
             processes[record['file_url']] = [record,
                                              subprocess.Popen(command.split(' '),
                                                               cwd=build_parent_path,
