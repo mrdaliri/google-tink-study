@@ -9,12 +9,12 @@ load_dotenv(override=True)
 git_root = 'repositories'
 # git_root = 'sample_repos'
 build_reports = 'build_reports'
-repos_csv = 'github_results_01122019_1242.csv'
-# repos_csv = 'github_results_sample.csv'
+repos_csv = 'output_files/github_results_01122019_1242.csv'
+# repos_csv = 'output_files/github_results_sample.csv'
 processes = dict()
 max_processes = 5
 
-csv_report = open('build_report_%s' % repos_csv, 'w')
+csv_report = open('output_files/build_report_%s' % Path(repos_csv).name, 'w')
 report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'file_url', 'actual_status', 'process_status'])
 report_writer.writeheader()
 

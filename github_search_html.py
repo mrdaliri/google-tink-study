@@ -69,7 +69,7 @@ def scrap(cookie, query, discard_incomplete_results=True, step_time=10):
             search_url = base_url + '/' + next_page_link.attrs['href']
 
     saved_records = 0
-    with open('github_results_%s.csv' % datetime.now().strftime("%Y%m%d-%H%M%S"), 'w', newline='') as output:
+    with open('output_files/github_results_%s.csv' % datetime.now().strftime("%Y%m%d-%H%M%S"), 'w', newline='') as output:
         if len(results) > 0:
             csv_fields = results[0].__dict__
 
