@@ -4,12 +4,14 @@ import csv
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 git_root = 'repositories'
+# git_root = 'sample_repos'
 build_reports = 'build_reports'
 repos_csv = 'github_results_01122019_1242.csv'
+# repos_csv = 'github_results_sample.csv'
 processes = dict()
-max_processes = 1
+max_processes = 5
 
 csv_report = open('build_report_%s' % repos_csv, 'w')
 report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'file_url', 'actual_status', 'process_status'])
@@ -57,7 +59,7 @@ def proc():
                 command = 'mvn compile'
             else:
                 command = 'gradle wrapper'
-            processes[record['file_path']] = [record,
+            processes[record['file_url']] = [record,
                                               subprocess.Popen(command.split(' '),
                                                                cwd=build_parent_path,
                                                                stdout=subprocess.PIPE,
@@ -66,18 +68,16 @@ def proc():
             if len(processes) >= max_processes:
                 os.wait()
 
-            for i in list(processes.keys()):
-                if processes[i][1].poll() is not None:
-                    save_result(processes[i])
-                    del processes[i]
+                for i in list(processes.keys()):
+                    if processes[i][1].poll() is not None:
+                        save_result(processes[i])
+                        del processes[i]
 
     # Check if all the child processes were closed
     for i in list(processes.keys()):
         if processes[i][1].poll() is None:
             processes[i][1].wait()
-        else:
-            save_result(processes[i])
-            del processes[i]
+        save_result(processes[i])
 
 
 proc()
