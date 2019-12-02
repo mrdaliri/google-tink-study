@@ -61,15 +61,24 @@ def proc():
                                'w+')
 
             command = ''
+            command_alternative = None
             if record['file_name'] == 'pom.xml':
                 command = 'mvn clean compile'
             else:
                 command = './gradlew clean build'
-            processes[record['file_url']] = [record,
-                                             subprocess.Popen(command.split(' '),
-                                                              cwd=build_parent_path,
-                                                              stdout=build_output,
-                                                              stderr=build_error)]
+                command_alternative = 'gradle clean build'
+            try:
+                processes[record['file_url']] = [record,
+                                                 subprocess.Popen(command.split(' '),
+                                                                  cwd=build_parent_path,
+                                                                  stdout=build_output,
+                                                                  stderr=build_error)]
+            except FileNotFoundError:
+                processes[record['file_url']] = [record,
+                                                 subprocess.Popen(command_alternative.split(' '),
+                                                                  cwd=build_parent_path,
+                                                                  stdout=build_output,
+                                                                  stderr=build_error)]
             print("Running '%s' in %s" % (command, build_parent_path))
             if len(processes) >= max_processes:
                 os.wait()
