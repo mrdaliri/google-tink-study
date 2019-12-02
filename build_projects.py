@@ -38,7 +38,9 @@ def save_result(p):
     out = build_output.read()
 
     actual_result = int(str(err).upper().find('BUILD FAIL') != -1 or str(out).upper().find('BUILD FAIL') != -1)
-    report_writer.writerow(record.update({'actual_status': actual_result, 'process_status': process_status}))
+    record['actual_status'] = actual_result
+    record['process_status'] = process_status
+    report_writer.writerow(record)
     print("Process finished with status P%s-A%s for %s" % (process_status, actual_result, record['file_url']))
 
 
