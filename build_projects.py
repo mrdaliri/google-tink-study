@@ -73,7 +73,7 @@ def proc():
                                                                   cwd=build_parent_path,
                                                                   stdout=build_output,
                                                                   stderr=build_error)]
-            except FileNotFoundError:
+            except (FileNotFoundError, PermissionError):
                 processes[record['file_url']] = [record,
                                                  subprocess.Popen(command_alternative.split(' '),
                                                                   cwd=build_parent_path,
