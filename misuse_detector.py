@@ -8,13 +8,13 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 git_root = 'repositories'
 # git_root = 'sample_repos'
-build_reports = 'build_reports'
-repos_csv = 'output_files/github_results_01122019_1242.csv'
+test_reports = 'test_reports'
+repos_csv = 'output_files/build_report_github_results_sample.csv'
 # repos_csv = 'output_files/github_results_sample.csv'
 processes = dict()
 max_processes = 5
 
-csv_report = open('output_files/build_report_%s' % Path(repos_csv).name, 'w')
+csv_report = open('output_files/test_report_%s' % Path(repos_csv).name, 'w')
 report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'file_url', 'actual_status', 'process_status'])
 report_writer.writeheader()
 
@@ -27,7 +27,7 @@ def save_result(p):
     record = p[0]
     process_status = p[1].poll()
 
-    reports_folder = os.path.join(build_reports, encode(record))
+    reports_folder = os.path.join(test_reports, encode(record))
     if not os.path.exists(reports_folder):
         os.mkdir(reports_folder)
     build_output = open(os.path.join(reports_folder, '%s_output.txt' % record['file_path'].replace('/', '_')), 'r')
@@ -43,7 +43,7 @@ def save_result(p):
     print("Process finished with status P%s-A%s for %s" % (process_status, actual_result, record['file_url']))
 
 
-def proc():
+def analyze():
     with open(repos_csv, newline='') as csv_file:
         reader = csv.DictReader(csv_file)
 
@@ -53,7 +53,7 @@ def proc():
             build_file_path = os.path.join(main_folder, record['file_path'])
             build_parent_path = Path(build_file_path).parent
 
-            reports_folder = os.path.join(build_reports, encode(record))
+            reports_folder = os.path.join(test_reports, encode(record))
             if not os.path.exists(reports_folder):
                 os.mkdir(reports_folder)
             build_output = open(os.path.join(reports_folder, '%s_output.txt' % record['file_path'].replace('/', '_')),
@@ -62,10 +62,7 @@ def proc():
                                'w+')
 
             command = ''
-            if record['file_name'] == 'pom.xml':
-                command = 'mvn clean compile'
-            else:
-                command = './gradlew clean build'
+            command =
             processes[record['file_url']] = [record,
                                              subprocess.Popen(command.split(' '),
                                                               cwd=build_parent_path,
@@ -87,4 +84,4 @@ def proc():
         save_result(processes[i])
 
 
-proc()
+analyze()
