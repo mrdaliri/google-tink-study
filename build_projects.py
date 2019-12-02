@@ -16,6 +16,7 @@ max_processes = 5
 
 csv_report = open('build_report_%s' % repos_csv, 'w')
 report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'file_url', 'actual_status', 'process_status'])
+report_writer.writeheader()
 
 
 def encode(record):
