@@ -83,7 +83,7 @@ def proc():
                                                                   stderr=build_error)]
             except (FileNotFoundError, PermissionError) as ex:
                 if command_alternative is None:
-                    print("Skip %s due to an exception (no alternative): %s", (build_parent_path, ex.format_exc()))
+                    print("Skip %s due to an exception (no alternative): %s", (build_parent_path, str(ex)))
                     continue
 
                 processes[record['file_url']] = [record,
