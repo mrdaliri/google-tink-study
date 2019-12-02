@@ -37,7 +37,13 @@ def save_result(p):
     err = build_error.read()
     out = build_output.read()
 
-    actual_result = int(str(err).upper().find('BUILD FAIL') != -1 or str(out).upper().find('BUILD FAIL') != -1)
+    actual_result = 0
+    failure_strings = ['BUILD FAIL', 'Error: Could not find or load main class org.gradle.wrapper.GradleWrapperMain']
+    for string in failure_strings:
+        actual_result = int(str(err).upper().find(string.upper()) != -1 or str(out).upper().find(string.upper()) != -1)
+        if actual_result == 1:
+            break
+
     record['actual_status'] = actual_result
     record['process_status'] = process_status
     report_writer.writerow(record)
