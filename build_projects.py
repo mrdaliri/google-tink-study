@@ -15,7 +15,8 @@ processes = dict()
 max_processes = 5
 
 csv_report = open('output_files/build_report_%s' % Path(repos_csv).name, 'w')
-report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'file_url', 'actual_status', 'process_status'])
+report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'repo_name', 'file_path', 'file_url', 'commit_sha',
+                                                       'p_language', 'actual_status', 'process_status'])
 report_writer.writeheader()
 
 
@@ -37,9 +38,7 @@ def save_result(p):
     out = build_output.read()
 
     actual_result = int(str(err).upper().find('BUILD FAIL') != -1 or str(out).upper().find('BUILD FAIL') != -1)
-    report_writer.writerow(
-        {'actual_status': actual_result, 'process_status': process_status, 'file_url': record['file_url'],
-         'file_name': record['file_name']})
+    report_writer.writerow(record.update({'actual_status': actual_result, 'process_status': process_status}))
     print("Process finished with status P%s-A%s for %s" % (process_status, actual_result, record['file_url']))
 
 
