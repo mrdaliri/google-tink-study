@@ -2,6 +2,7 @@ import subprocess
 import os
 import csv
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -23,19 +24,16 @@ def encode(record):
 
 def save_result(p):
     record = p[0]
-    err = p[1].stderr.read()
-    out = p[1].stdout.read()
     process_status = p[1].poll()
 
     reports_folder = os.path.join(build_reports, encode(record))
     if not os.path.exists(reports_folder):
         os.mkdir(reports_folder)
-    build_output = open(os.path.join(reports_folder, '%s_output.txt' % record['file_path'].replace('/', '_')), 'wb')
-    build_error = open(os.path.join(reports_folder, '%s_error.txt' % record['file_path'].replace('/', '_')), 'wb')
-    build_output.write(out)
-    build_output.close()
-    build_error.write(err)
-    build_error.close()
+    build_output = open(os.path.join(reports_folder, '%s_output.txt' % record['file_path'].replace('/', '_')), 'r')
+    build_error = open(os.path.join(reports_folder, '%s_error.txt' % record['file_path'].replace('/', '_')), 'r')
+
+    err = build_error.read()
+    out = build_output.read()
 
     actual_result = int(str(err).upper().find('BUILD FAIL') != -1 or str(out).upper().find('BUILD FAIL') != -1)
     report_writer.writerow(
@@ -54,16 +52,24 @@ def proc():
             build_file_path = os.path.join(main_folder, record['file_path'])
             build_parent_path = Path(build_file_path).parent
 
+            reports_folder = os.path.join(build_reports, encode(record))
+            if not os.path.exists(reports_folder):
+                os.mkdir(reports_folder)
+            build_output = open(os.path.join(reports_folder, '%s_output.txt' % record['file_path'].replace('/', '_')),
+                                'w+')
+            build_error = open(os.path.join(reports_folder, '%s_error.txt' % record['file_path'].replace('/', '_')),
+                               'w+')
+
             command = ''
             if record['file_name'] == 'pom.xml':
                 command = 'mvn compile'
             else:
                 command = 'gradle wrapper'
             processes[record['file_url']] = [record,
-                                              subprocess.Popen(command.split(' '),
-                                                               cwd=build_parent_path,
-                                                               stdout=subprocess.PIPE,
-                                                               stderr=subprocess.PIPE)]
+                                             subprocess.Popen(command.split(' '),
+                                                              cwd=build_parent_path,
+                                                              stdout=build_output,
+                                                              stderr=build_error)]
             print("Running '%s' in %s" % (command, build_parent_path))
             if len(processes) >= max_processes:
                 os.wait()
