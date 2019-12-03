@@ -9,13 +9,18 @@ load_dotenv(override=True)
 git_root = 'repositories'
 # git_root = 'sample_repos'
 test_reports = 'test_reports'
-repos_csv = 'output_files/build_report_github_results_sample.csv'
-# repos_csv = 'output_files/github_results_sample.csv'
+# repos_csv = 'output_files/build_report_github_results_sample.csv'
+repos_csv = 'output_files/build_report_github_results_01122019_1242.csv'
+analyzer_reports = 'analyser_reports'
 processes = dict()
 max_processes = 5
 
+crypto_directory = 'crypto_analysis'
+rules_directory = os.path.join(crypto_directory, 'rules')
+analyzer_jar_file = os.path.join(crypto_directory, 'CryptoAnalysis-2.6.1.jar')
 csv_report = open('output_files/test_report_%s' % Path(repos_csv).name, 'w')
-report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'file_url', 'actual_status', 'process_status'])
+report_writer = csv.DictWriter(csv_report, fieldnames=['file_name', 'repo_name', 'file_path', 'file_url', 'commit_sha',
+                                                       'p_language', 'process_status'])
 report_writer.writeheader()
 
 
@@ -27,20 +32,10 @@ def save_result(p):
     record = p[0]
     process_status = p[1].poll()
 
-    reports_folder = os.path.join(test_reports, encode(record))
-    if not os.path.exists(reports_folder):
-        os.mkdir(reports_folder)
-    build_output = open(os.path.join(reports_folder, '%s_output.txt' % record['file_path'].replace('/', '_')), 'r')
-    build_error = open(os.path.join(reports_folder, '%s_error.txt' % record['file_path'].replace('/', '_')), 'r')
-
-    err = build_error.read()
-    out = build_output.read()
-
-    actual_result = int(str(err).upper().find('BUILD FAIL') != -1 or str(out).upper().find('BUILD FAIL') != -1)
-    report_writer.writerow(
-        {'actual_status': actual_result, 'process_status': process_status, 'file_url': record['file_url'],
-         'file_name': record['file_name']})
-    print("Process finished with status P%s-A%s for %s" % (process_status, actual_result, record['file_url']))
+    del record['actual_status']
+    record['process_status'] = process_status
+    report_writer.writerow(record)
+    print("Process finished with status P%s for %s" % (process_status, record['file_url']))
 
 
 def analyze():
@@ -53,7 +48,11 @@ def analyze():
             build_file_path = os.path.join(main_folder, record['file_path'])
             build_parent_path = Path(build_file_path).parent
 
-            reports_folder = os.path.join(test_reports, encode(record))
+            if int(record['actual_status']) == 1:
+                print("Skip %s due to `actual_status` = 1" % build_parent_path)
+                continue
+
+            reports_folder = os.path.join(test_reports, encoded_name)
             if not os.path.exists(reports_folder):
                 os.mkdir(reports_folder)
             build_output = open(os.path.join(reports_folder, '%s_output.txt' % record['file_path'].replace('/', '_')),
@@ -61,8 +60,21 @@ def analyze():
             build_error = open(os.path.join(reports_folder, '%s_error.txt' % record['file_path'].replace('/', '_')),
                                'w+')
 
-            command = ''
-            command =
+            classes_path = ''
+            if record['file_name'] == 'pom.xml':
+                classes_path = os.path.join(build_parent_path, 'target', 'classes')
+            else:
+                classes_path = os.path.join(build_parent_path, 'build', 'classes')
+
+            analysis_folder = os.path.join(analyzer_reports, encoded_name)
+            if not os.path.exists(analysis_folder):
+                os.mkdir(analysis_folder)
+            analyzer_report = os.path.join(analysis_folder, record['file_path'].replace('/', '_').replace('.', '_'))
+            if not os.path.exists(analyzer_report):
+                os.mkdir(analyzer_report)
+            report_csv_file = os.path.join(analysis_folder, 'report_%s.csv' % record['file_path'].replace('/', '_'))
+
+            command = 'java -cp %(crypto_jar)s crypto.HeadlessCryptoScanner --rulesDir=%(rules)s --applicationCp=%(app)s --reportDir=%(report_dir)s --csvReportFile=%(csv_file)s --softwareIdentifier=%(id)s' % {'rules': os.path.abspath(rules_directory), 'crypto_jar': os.path.abspath(analyzer_jar_file), 'app': os.path.abspath(classes_path), 'report_dir': os.path.abspath(analyzer_report), 'csv_file': os.path.abspath(report_csv_file), 'id': record['file_path']}
             processes[record['file_url']] = [record,
                                              subprocess.Popen(command.split(' '),
                                                               cwd=build_parent_path,
