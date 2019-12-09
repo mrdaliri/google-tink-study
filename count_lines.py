@@ -11,7 +11,7 @@ git_root = 'repositories'
 # git_root = 'sample_repos'
 cloc_reports = 'cloc_reports'
 # repos_csv = 'output_files/build_report_github_results_sample.csv'
-repos_csv = 'output_files/build_report_github_results_01122019_1242.csv'
+repos_csv = 'output_files/build_report_github_results.csv'
 processes = dict()
 max_processes = 5
 

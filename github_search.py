@@ -32,7 +32,7 @@ while True:
 
 csv_fields = ['file_name', 'path', 'repo_name', 'repo_url', 'owner', 'owner_type']
 saved_records = 0
-with open('output_files/github_results_api_%s.csv' % datetime.now().strftime("%Y%m%d-%H%M%S"), 'w', newline='') as output:
+with open('output_files/github_results_api.csv', 'w', newline='') as output:
     writer = csv.DictWriter(output, fieldnames=csv_fields)
     writer.writeheader()
 

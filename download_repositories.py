@@ -3,7 +3,7 @@ import requests
 
 git_root = 'repositories'
 
-with open('output_files/github_results_01122019_1242.csv', newline='') as csv_file:
+with open('output_files/github_results.csv', newline='') as csv_file:
     reader = csv.DictReader(csv_file)
 
     for record in reader:
